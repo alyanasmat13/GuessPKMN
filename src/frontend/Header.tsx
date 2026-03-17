@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 let externalSetStreak: React.Dispatch<React.SetStateAction<number>> | null = null;
 let streakValue: number = 0;
+const streakListeners: Array<(s: number) => void> = [];
 
 export function updateStreak() {
 	streakValue = streakValue + 1;
@@ -10,6 +11,7 @@ export function updateStreak() {
 	} else {
 		console.debug('Streak updated in module; component not mounted yet.');
 	}
+	for (const l of streakListeners) l(streakValue);
 }
 
 export function resetStreak() {
@@ -19,6 +21,15 @@ export function resetStreak() {
 	} else {
 		console.debug('Streak reset in module; component not mounted yet.');
 	}
+	for (const l of streakListeners) l(streakValue);
+}
+
+export function subscribeStreak(listener: (s: number) => void) {
+	streakListeners.push(listener);
+	return () => {
+		const i = streakListeners.indexOf(listener);
+		if (i >= 0) streakListeners.splice(i, 1);
+	};
 }
 
 let generationValue: string = 'all';
@@ -78,6 +89,10 @@ export function getGenerationRange(gen?: string): { min: number; max: number } {
 	}
 }
 
+export function getCurrentStreak() {
+	return streakValue;
+}
+
 function Header() {
 	const [streak, setStreak] = useState<number>(streakValue);
 	const [gen, setGen] = useState<string>(generationValue);
@@ -93,7 +108,7 @@ function Header() {
 	return (
 		<div className="flex items-center gap-4 text-2xl">
 			<h1 className='bg-gray-700 inset-shadow-lg inset-shadow-black p-3 rounded-lg text-center pt-2.25'>
-				Streak: {streak}
+				Current Streak: {streak}
 			</h1>
 			<div className='gap-0'>
 				<label className='bg-gray-700 inset-shadow-lg inset-shadow-black p-3 pr-0 rounded-lg rounded-r-none text-center pt-2.25' htmlFor="generation">Gen:</label>

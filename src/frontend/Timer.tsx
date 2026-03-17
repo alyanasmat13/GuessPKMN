@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 let externalResetTimer: (() => void) | null = null;
 let pendingReset = false;
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function resetTimer() {
 	if (externalResetTimer) {
 		externalResetTimer();

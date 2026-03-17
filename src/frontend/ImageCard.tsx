@@ -1,5 +1,5 @@
 import { useState, useEffect, type FC } from 'react'
-import { fetchPokemon, subscribe, type PokemonData } from './api/pokemon'
+import { fetchPokemon, subscribe, type PokemonData } from '../api/pokemon'
 
 const ImageCard: FC = () => {
   const [data, setData] = useState<PokemonData | null>(null)

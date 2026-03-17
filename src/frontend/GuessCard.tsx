@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, type FC } from 'react'
-import { fetchPokemon, nextPokemon, subscribe, type PokemonData } from './api/pokemon'
+import { fetchPokemon, nextPokemon, subscribe, type PokemonData } from '../api/pokemon'
 import { updateStreak, resetStreak } from './Header'
 import { resetTimer } from './Timer'
 
