@@ -16,7 +16,7 @@ export const errorHandler = (
     return;
   }
 
-  // Generic Logging to Console (In production, use Winston/Pino)
+  // Generic Logging to Console
   console.error(`[Error] ${req.method} ${req.path}`, err.message);
 
   // Catch HTTP Fetch Errors from external API

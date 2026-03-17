@@ -10,12 +10,35 @@ export interface PokemonData {
   }
 }
 
-let currentPokemonId: number | null = null
-
 type Subscriber = (data: PokemonData) => void
 const subscribers = new Set<Subscriber>()
 
+let eventSource: EventSource | null = null;
+
+function setupEventSource() {
+  if (eventSource) return;
+  eventSource = new EventSource('/api/pokemon/subscribe');
+  
+  eventSource.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data) as PokemonData;
+      notifySubscribers(data);
+    } catch (err) {
+      console.error('Failed to parse SSE message:', err);
+    }
+  };
+  
+  eventSource.onerror = (err) => {
+    console.error('SSE connection error:', err);
+    eventSource?.close();
+    eventSource = null;
+    // Attempt to reconnect after 3 seconds
+    setTimeout(setupEventSource, 3000);
+  };
+}
+
 export function subscribe(cb: Subscriber): () => void {
+  setupEventSource();
   subscribers.add(cb)
   return () => subscribers.delete(cb)
 }
@@ -30,48 +53,30 @@ function notifySubscribers(data: PokemonData) {
   })
 }
 
-export function getPokemonId(): number | null {
-  return currentPokemonId
-}
-
-export function setPokemonId(id: number) {
-  currentPokemonId = id
-}
-
-function ensurePokemonId(): number {
-  if (currentPokemonId == null) {
-    currentPokemonId = getRandomPokemonId() 
-  }
-  return currentPokemonId
-}
-
-function resetPokemonId(): number {
-  currentPokemonId = getRandomPokemonId()
-  return currentPokemonId
-}
-
-export async function fetchPokemon(id?: number): Promise<PokemonData> {
-  const pokemonId = id ?? ensurePokemonId()
-  currentPokemonId = pokemonId
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`)
+export async function fetchPokemon(): Promise<PokemonData> {
+  // Fetch current session Pokémon from the backend
+  const res = await fetch('/api/pokemon')
   if (!res.ok) {
-    throw new Error(`Failed to fetch pokemon ${pokemonId}: ${res.status}`)
+    throw new Error(`Failed to fetch pokemon: ${res.status}`)
   }
-  const json = (await res.json()) as PokemonData
-  return json
+  return (await res.json()) as PokemonData
 }
 
 export async function nextPokemon(): Promise<PokemonData> {
-  const id = resetPokemonId()
-  const data = await fetchPokemon(id)
-  notifySubscribers(data)
-  return data
-}
+  const { min, max } = getGenerationRange()
+  
+  const res = await fetch('/api/pokemon/next', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ min, max })
+  });
 
-function getRandomPokemonId(): number {
-  let min = getGenerationRange().min
-  let max = getGenerationRange().max
-  if (min < 1) min = 1
-  if (max > 1025) max = 1025
-  return Math.floor(Math.random() * (max - min + 1)) + min
+  if (!res.ok) {
+    throw new Error(`Failed to fetch next pokemon: ${res.status}`);
+  }
+
+  // The backend will broadcast the updated Pokemon via SSE, but we return the raw response here.
+  return (await res.json()) as PokemonData;
 }

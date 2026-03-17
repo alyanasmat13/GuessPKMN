@@ -106,12 +106,15 @@ function Header() {
 	}, []);
 
 	return (
-		<div className="flex items-center gap-4 text-2xl">
-			<h1 className='bg-gray-700 inset-shadow-lg inset-shadow-black p-3 rounded-lg text-center pt-2.25'>
-				Current Streak: {streak}
-			</h1>
-			<div className='gap-0'>
-				<label className='bg-gray-700 inset-shadow-lg inset-shadow-black p-3 pr-0 rounded-lg rounded-r-none text-center pt-2.25' htmlFor="generation">Gen:</label>
+		<div className="flex items-center gap-3">
+			<div className="stat-pill flex items-center gap-2">
+				<span className="text-white/50 text-md">Streak</span>
+				<span className="text-white font-bold text-lg">{streak}</span>
+			</div>
+			<div className="flex items-center gap-1">
+				<label className="stat-pill rounded-r-none border-r-0 flex items-center gap-2" htmlFor="generation">
+					<span className="text-white/50 text-md">Gen</span>
+				</label>
 				<select
 					id="generation"
 					value={gen}
@@ -121,7 +124,7 @@ function Header() {
 						setGeneration(v);
 					}}
 					name="generation"
-					className='bg-gray-700 inset-shadow-lg inset-shadow-black p-3 rounded-l-none rounded-lg text-center pt-2 pb-[11px]'>
+					className="select-glass rounded-l-none border-l-0">
 					<option value="all">All</option>
 					<option value="one">1</option>
 					<option value="two">2</option>

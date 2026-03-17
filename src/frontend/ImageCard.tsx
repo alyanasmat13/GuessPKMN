@@ -3,18 +3,19 @@ import { fetchPokemon, subscribe, type PokemonData } from '../api/pokemon'
 
 const ImageCard: FC = () => {
   const [data, setData] = useState<PokemonData | null>(null)
+  const [imageKey, setImageKey] = useState(0)
 
   useEffect(() => {
     let mounted = true
 
     fetchPokemon()
       .then((d) => {
-        if (mounted) setData(d)
+        if (mounted) { setData(d); setImageKey(k => k + 1) }
       })
       .catch((err) => console.error('Error fetching data:', err))
 
     const unsubscribe = subscribe((d) => {
-      if (mounted) setData(d)
+      if (mounted) { setData(d); setImageKey(k => k + 1) }
     })
 
     return () => {
@@ -29,15 +30,22 @@ const ImageCard: FC = () => {
     null
 
   return (
-    <div>
+    <div className="pokemon-image-wrapper animate-float">
       {data ? (
         spriteUrl ? (
-          <img className="h-80 w-auto" src={spriteUrl} alt={data.name} />
+          <img
+            key={imageKey}
+            className="h-64 w-auto animate-pop-in"
+            src={spriteUrl}
+            alt={data.name}
+          />
         ) : (
-          <p>No sprite available</p>
+          <div className="loading-shimmer flex items-center justify-center">
+            <span className="text-white/40 text-sm">No sprite</span>
+          </div>
         )
       ) : (
-        <p>Loading...</p>
+        <div className="loading-shimmer" />
       )}
     </div>
   )

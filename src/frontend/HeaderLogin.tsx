@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { auth } from '../backend/firebase'
 import { onAuthStateChanged, type User } from 'firebase/auth'
 import { getHighestStreak, setHighestStreak } from '../backend/streaks'
-import  { getCurrentStreak, subscribeStreak }  from './Header'
+import { getCurrentStreak, subscribeStreak } from './Header'
 
 const HeaderLogin = () => {
 
@@ -31,20 +31,17 @@ const HeaderLogin = () => {
     }, [currentStreak, user, highest])
 
     useEffect(() => {
-        // subscribe to live streak updates from Header module
         const unsub = subscribeStreak((s) => setCurrentStreak(s));
-        // also initialize
         setCurrentStreak(getCurrentStreak());
         return () => unsub();
     }, [])
-    
+
 
     return (
-        <div className="flex items-center gap-4 text-2xl">
-			<h1 className='bg-gray-700 inset-shadow-lg inset-shadow-black p-3 rounded-lg text-center pt-2.25'>
-				Highest Streak: {highest}
-			</h1>
-		</div>
+        <div className="stat-pill flex items-center gap-2">
+            <span className="text-white/50 text-md">Best</span>
+            <span className="text-white font-bold text-lg">{highest}</span>
+        </div>
     )
 }
 

@@ -1,16 +1,26 @@
 import { useState, useEffect, useRef, type FC } from 'react'
+import { createPortal } from 'react-dom'
 import { fetchPokemon, nextPokemon, subscribe, type PokemonData } from '../api/pokemon'
 import { updateStreak, resetStreak } from './Header'
 import { resetTimer } from './Timer'
 
 function checkName(guess: string, actual: string): boolean {
-  return guess.trim().toLowerCase() === actual.toLowerCase()
+  const g = guess.trim().toLowerCase()
+  const a = actual.toLowerCase()
+  return g === a || a.startsWith(g + '-')
+}
+
+function formatPokemonName(name: string): string {
+  return name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
 const GuessCard: FC = () => {
   const [data, setData] = useState<PokemonData | null>(null)
   const [input, setInput] = useState('')
+  const [feedback, setFeedback] = useState<{ type: 'correct' | 'wrong' | 'giveup'; name: string } | null>(null)
+  const [showToast, setShowToast] = useState(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
+  const feedbackTimer = useRef<number | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -33,10 +43,17 @@ const GuessCard: FC = () => {
     }
   }, [])
 
+  function showFeedback(type: 'correct' | 'wrong' | 'giveup', name: string) {
+    if (feedbackTimer.current) clearTimeout(feedbackTimer.current)
+    setFeedback({ type, name })
+    setShowToast(true)
+    feedbackTimer.current = window.setTimeout(() => setShowToast(false), 2200)
+  }
+
   async function handleGuess() {
     if (!data) return
     if (checkName(input, data.name)) {
-      alert('Correct! It is ' + data.name)
+      showFeedback('correct', data.name)
       updateStreak()
       resetTimer()
       try {
@@ -47,14 +64,14 @@ const GuessCard: FC = () => {
         console.error('Error fetching next pokemon:', err)
       }
     } else {
-      alert('Wrong! Try again.')
+      showFeedback('wrong', '')
       inputRef.current?.focus()
     }
   }
 
   async function handleGiveUp() {
     if (!data) return
-    alert('The correct answer was ' + data.name)
+    showFeedback('giveup', data.name)
     resetStreak()
     resetTimer()
     try {
@@ -72,32 +89,47 @@ const GuessCard: FC = () => {
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 text-2xl">
-      <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
-        <h1>Who's That Pokémon?</h1>
-        <input
-          ref={inputRef}
-          className="border border-amber-50 p-2 rounded-lg"
-          type="text"
-          id="guessInput"
-          placeholder="Enter Pokémon name"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}/>
-        <div className="flex flex-row items-center gap-4">
-          <button
-            type="submit"
-            className="bg-gray-700 hover:bg-gray-900 hover:cursor-pointer inset-shadow-lg inset-shadow-black p-3 rounded-lg text-center pt-2.25 transition-colors duration-200">
-            Guess!
-          </button>
-          <button
-            type="button"
-            onClick={() => void handleGiveUp()}
-            className="bg-gray-700 hover:bg-gray-900 hover:cursor-pointer inset-shadow-lg inset-shadow-black p-3 rounded-lg text-center pt-2.25 transition-colors duration-200">
-            Give up
-          </button>
-        </div>
-      </form>
-    </div>
+    <>
+      {/* Toast notification rendered into body via Portal to ignore parent paddings */}
+      {createPortal(
+        <div className={`feedback-toast ${showToast ? 'show' : ''} ${feedback?.type === 'correct' ? 'correct' : 'wrong'}`}>
+          {feedback?.type === 'correct' && `Correct! It's ${formatPokemonName(feedback.name)}!`}
+          {feedback?.type === 'wrong' && 'Wrong! Try again.'}
+          {feedback?.type === 'giveup' && `The answer was ${formatPokemonName(feedback.name)}`}
+        </div>,
+        document.body
+      )}
+
+      <div className="flex flex-col items-center gap-5 w-full">
+        <h1 className="gradient-title text-2xl font-bold tracking-wide">
+          Who's That Pokémon?
+        </h1>
+
+        <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4 w-full max-w-sm">
+          <input
+            ref={inputRef}
+            className="glow-input w-full text-center"
+            type="text"
+            id="guessInput"
+            placeholder="Enter Pokémon name..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            autoComplete="off"
+          />
+          <div className="flex items-center gap-3">
+            <button type="submit" className="btn-primary">
+              Guess!
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleGiveUp()}
+              className="btn-secondary">
+              Give up
+            </button>
+          </div>
+        </form>
+      </div>
+    </>
   )
 }
 

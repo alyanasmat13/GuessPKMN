@@ -38,7 +38,8 @@ export const pokemonController = {
 
   async nextPokemon(req: Request, res: Response, next: NextFunction) {
     try {
-      const data = await pokemonService.getNextPokemon();
+      const { min, max } = req.body;
+      const data = await pokemonService.getNextPokemon(Number(min), Number(max));
       
       // Broadcast to SSE clients
       pokemonService.broadcastPokemon({

@@ -5,6 +5,34 @@ import { Response } from 'express';
 let currentPokemonId: number | null = null;
 const subscribers = new Set<Response>();
 
+// Track the last 50 randomly drawn Pokemon to prevent immediate repeats
+const history: number[] = [];
+
+function getRandomId(min: number, max: number): number {
+  if (min < 1) min = 1;
+  if (max > config.MAX_POKEMON_ID) max = config.MAX_POKEMON_ID;
+  
+  // If the range is extremely small (e.g. 1 Pokemon), don't infinite loop
+  if (max - min <= 1) return min;
+
+  let id = Math.floor(Math.random() * (max - min + 1)) + min;
+  
+  // Anti-repeat logic
+  let attempts = 0;
+  while (history.includes(id) && attempts < 50) {
+    id = Math.floor(Math.random() * (max - min + 1)) + min;
+    attempts++;
+  }
+  
+  // Save to history and cap length at 50
+  history.push(id);
+  if (history.length > 50) {
+    history.shift();
+  }
+  
+  return id;
+}
+
 export const pokemonService = {
   /**
    * Fetches JSON data for a specific Pokemon ID from the external PokeAPI.
@@ -20,9 +48,9 @@ export const pokemonService = {
   /**
    * Gets the currently active Pokemon, or generates a new random one if none exists.
    */
-  async getCurrentPokemon() {
+  async getCurrentPokemon(min: number = 1, max: number = config.MAX_POKEMON_ID) {
     if (currentPokemonId === null) {
-      currentPokemonId = Math.floor(Math.random() * config.MAX_POKEMON_ID) + 1;
+      currentPokemonId = getRandomId(min, max);
     }
     return await this.fetchPokemonData(currentPokemonId);
   },
@@ -30,8 +58,8 @@ export const pokemonService = {
   /**
    * Generates a new random Pokemon and sets it as the active session Pokemon.
    */
-  async getNextPokemon() {
-    currentPokemonId = Math.floor(Math.random() * config.MAX_POKEMON_ID) + 1;
+  async getNextPokemon(min: number = 1, max: number = config.MAX_POKEMON_ID) {
+    currentPokemonId = getRandomId(min, max);
     return await this.fetchPokemonData(currentPokemonId);
   },
 

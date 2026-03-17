@@ -15,8 +15,10 @@ export function GoogleLoginButton() {
     return (
       <button
         onClick={handleGoogleLogout}
-        className="px-4 py-2 bg-gray-700 text-white rounded-lg shadow-sm hover:bg-gray-500 transition hover:cursor-pointer">
-        Log out
+        className="btn-login flex items-center gap-2">
+        <span className="text-sm">{user.displayName?.split(' ')[0] ?? 'User'}</span>
+        <span className="text-white/40">·</span>
+        <span className="text-white/50 text-xs">Log out</span>
       </button>
     )
   }
@@ -24,11 +26,11 @@ export function GoogleLoginButton() {
   return (
     <button
       onClick={handleGoogleLogin}
-      className="flex items-center gap-3 px-6 py-3 bg-gray-700 rounded-lg shadow-sm hover:shadow-md hover:bg-gray-500 hover:cursor-pointer transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      className="btn-login flex items-center gap-3"
     >
       <svg
-        width="18"
-        height="18"
+        width="16"
+        height="16"
         viewBox="0 0 18 18"
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -51,8 +53,8 @@ export function GoogleLoginButton() {
           />
         </g>
       </svg>
-      <span className="text-gray-50 font-medium text-sm">
-        Sign in with Google
+      <span className="text-sm font-medium">
+        Sign in
       </span>
     </button>
   )
