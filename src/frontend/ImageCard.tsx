@@ -40,12 +40,12 @@ const ImageCard: FC = () => {
             alt={data.name}
           />
         ) : (
-          <div className="loading-shimmer flex items-center justify-center">
-            <span className="text-white/40 text-sm">No sprite</span>
+          <div className="flex items-center justify-center w-64 h-64">
+            <span className="text-white/20 text-sm tracking-widest uppercase">No sprite</span>
           </div>
         )
       ) : (
-        <div className="loading-shimmer" />
+        <div className="w-64 h-64" />
       )}
     </div>
   )

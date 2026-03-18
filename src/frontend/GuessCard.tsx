@@ -100,30 +100,26 @@ const GuessCard: FC = () => {
         document.body
       )}
 
-      <div className="flex flex-col items-center gap-5 w-full">
-        <h1 className="gradient-title text-2xl font-bold tracking-wide">
-          Who's That Pokémon?
-        </h1>
-
-        <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4 w-full max-w-sm">
+      <div className="flex flex-col items-center gap-6 w-full max-w-sm px-4">
+        <form onSubmit={handleSubmit} className="flex flex-col items-stretch gap-4 w-full">
           <input
             ref={inputRef}
-            className="glow-input w-full text-center"
+            className="glow-input w-full text-center placeholder:text-white/20"
             type="text"
             id="guessInput"
-            placeholder="Enter Pokémon name..."
+            placeholder="Type Pokémon name..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             autoComplete="off"
           />
-          <div className="flex items-center gap-3">
-            <button type="submit" className="btn-primary">
+          <div className="flex flex-col items-center gap-2">
+            <button type="submit" className="btn-primary w-full">
               Guess!
             </button>
             <button
               type="button"
               onClick={() => void handleGiveUp()}
-              className="btn-secondary">
+              className="btn-secondary mt-2">
               Give up
             </button>
           </div>

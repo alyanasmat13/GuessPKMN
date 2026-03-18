@@ -24,184 +24,128 @@
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-8px); }
 }
-@keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 12px rgba(99, 102, 241, 0.3); }
-  50%      { box-shadow: 0 0 28px rgba(99, 102, 241, 0.6); }
-}
-@keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
 @keyframes popIn {
   0%   { transform: scale(0.85); opacity: 0; }
   70%  { transform: scale(1.05); opacity: 1; }
   100% { transform: scale(1); }
 }
 
-.animate-fade-in-up { animation: fadeInUp 0.6s ease-out both; }
+.animate-fade-in-up { animation: fadeInUp 0.4s ease-out both; }
 .animate-float      { animation: float 3s ease-in-out infinite; }
-.animate-pulse-glow { animation: pulseGlow 2.5s ease-in-out infinite; }
-.animate-pop-in     { animation: popIn 0.4s ease-out both; }
+.animate-pop-in     { animation: popIn 0.3s ease-out both; }
 
-/* ===== Glass Card ===== */
-.glass-card {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  transition: all 0.3s ease;
-}
-.glass-card:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.18);
-  transform: translateY(-2px);
-}
+
 
 /* ===== Stat Pill ===== */
 .stat-pill {
-  background: rgba(99, 102, 241, 0.15);
-  border: 1px solid rgba(139, 92, 246, 0.25);
-  border-radius: 14px;
-  padding: 10px 20px;
   font-weight: 600;
-  font-size: 1rem;
-  transition: all 0.25s ease;
+  font-size: 1.125rem;
   letter-spacing: 0.02em;
   display: flex;
   align-items: center;
-  height: 52px; /* Fixed height for exact alignment */
-}
-.stat-pill:hover {
-  background: rgba(99, 102, 241, 0.25);
-  transform: scale(1.04);
+  gap: 0.5rem;
 }
 
 /* ===== Input Glowing ===== */
 .glow-input {
-  background: rgba(255, 255, 255, 0.07);
-  border: 2px solid rgba(139, 92, 246, 0.3);
-  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid transparent;
+  border-radius: 12px;
   padding: 14px 20px;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   color: white;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease, background 0.2s ease;
   outline: none;
-  font-family: 'Outfit', system-ui, sans-serif;
+  font-family: inherit;
 }
 .glow-input::placeholder {
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.3);
 }
 .glow-input:focus {
-  border-color: rgba(139, 92, 246, 0.7);
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.25);
-  background: rgba(255, 255, 255, 0.1);
+  border-color: #b91c1c;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 /* ===== Buttons ===== */
 .btn-primary {
-  background: #6366f1;
+  background: #b91c1c;
   color: white;
   border: none;
-  border-radius: 14px;
-  padding: 12px 28px;
-  font-size: 1.05rem;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-size: 1.125rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: 'Outfit', system-ui, sans-serif;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  font-family: inherit;
   letter-spacing: 0.02em;
 }
 .btn-primary:hover {
-  background: #818cf8;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 .btn-primary:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 14px;
-  padding: 12px 28px;
-  font-size: 1.05rem;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  border: none;
+  padding: 8px 16px;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: 'Outfit', system-ui, sans-serif;
+  transition: color 0.2s ease;
+  font-family: inherit;
 }
 .btn-secondary:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
-  transform: translateY(-2px);
-}
-.btn-secondary:active {
-  transform: translateY(0);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* ===== Login Button ===== */
 .btn-login {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  padding: 10px 20px;
-  color: rgba(255, 255, 255, 0.85);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: 'Outfit', system-ui, sans-serif;
+  transition: color 0.2s ease;
+  font-family: inherit;
   font-weight: 500;
   font-size: 0.9rem;
 }
 .btn-login:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.25);
-  transform: translateY(-1px);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* ===== Select Dropdown ===== */
 .select-glass {
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  border-radius: 12px;
-  padding: 10px 16px;
+  background: transparent;
   color: white;
-  font-size: 1.125rem; /* Now matches text-lg to equal stat-pills */
+  font-size: 1.125rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.25s ease;
   outline: none;
-  font-family: 'Outfit', system-ui, sans-serif;
+  border: none;
+  font-family: inherit;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23a78bfa' stroke-width='2'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23ffffff' stroke-opacity='0.5' stroke-width='2'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 14px center;
-  padding-right: 40px;
-  height: 52px; /* Fixed height for exact alignment matching stat-pill */
+  background-position: right center;
+  padding-right: 20px;
 }
 .select-glass option {
-  background: #1e1b4b;
+  background: #0f111a;
   color: white;
-}
-.select-glass:focus {
-  border-color: rgba(139, 92, 246, 0.6);
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.2);
 }
 
 /* ===== Timer ===== */
 .timer-display {
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  border-radius: 16px;
-  padding: 8px 24px;
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.05em;
+  font-size: 3.5rem;
+  line-height: 1;
 }
 
 /* ===== Pokemon Image ===== */
@@ -217,13 +161,13 @@
   width: 280px;
   height: 280px;
   border-radius: 50%;
-  background: rgba(139, 92, 246, 0.05);
+  background: rgba(185, 28, 28, 0.04);
   z-index: 0;
 }
 .pokemon-image-wrapper img {
   position: relative;
   z-index: 1;
-  filter: drop-shadow(0 8px 24px rgba(139, 92, 246, 0.3));
+  filter: drop-shadow(0 8px 24px rgba(185, 28, 28, 0.25));
   transition: transform 0.4s ease;
 }
 .pokemon-image-wrapper img:hover {
@@ -266,15 +210,4 @@
 .gradient-title {
   color: #f8fafc;
   font-weight: 800;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-/* ===== Loading Spinner ===== */
-.loading-shimmer {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(139,92,246,0.1), rgba(255,255,255,0.03));
-  background-size: 400% 100%;
-  animation: shimmer 1.8s infinite;
 }

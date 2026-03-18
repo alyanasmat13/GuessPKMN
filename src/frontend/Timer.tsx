@@ -51,8 +51,8 @@ const Timer = () => {
     }, []);
 
   return (
-    <div className="timer-display text-xl text-white/80">
-      ⏱ {sec}.{hundredths.toString().padStart(2, '0')}s
+    <div className="timer-display text-white">
+      {sec}.{hundredths.toString().padStart(2, '0')}
     </div>
   );
 };

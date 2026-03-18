@@ -38,9 +38,9 @@ const HeaderLogin = () => {
 
 
     return (
-        <div className="stat-pill flex items-center gap-2">
-            <span className="text-white/50 text-md">Best</span>
-            <span className="text-white font-bold text-lg">{highest}</span>
+        <div className="stat-pill">
+            <span className="text-white/40 text-sm uppercase tracking-widest">Best</span>
+            <span className="text-white font-bold">{highest}</span>
         </div>
     )
 }
