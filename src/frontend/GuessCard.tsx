@@ -14,6 +14,22 @@ function formatPokemonName(name: string): string {
   return name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
+// Fetch the next Pokémon, retrying a few times so a transient hiccup (network
+// blip or rate-limit burst) doesn't leave the game stuck on the current one.
+async function advanceWithRetry(attempts = 3): Promise<boolean> {
+  for (let i = 0; i < attempts; i++) {
+    try {
+      await nextPokemon()
+      return true
+    } catch (err) {
+      console.error(`Error fetching next pokemon (attempt ${i + 1}):`, err)
+      // Small backoff before retrying.
+      await new Promise((r) => setTimeout(r, 600 * (i + 1)))
+    }
+  }
+  return false
+}
+
 const GuessCard: FC = () => {
   const [data, setData] = useState<PokemonData | null>(null)
   const [input, setInput] = useState('')
@@ -21,6 +37,10 @@ const GuessCard: FC = () => {
   const [showToast, setShowToast] = useState(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const feedbackTimer = useRef<number | null>(null)
+  // Guards against awarding points more than once for the same Pokémon: once a
+  // round is resolved (guessed or given up) it stays locked until a NEW Pokémon
+  // arrives, even if advancing to the next one is briefly delayed.
+  const resolvedRef = useRef(false)
 
   useEffect(() => {
     let mounted = true
@@ -43,6 +63,12 @@ const GuessCard: FC = () => {
     }
   }, [])
 
+  // A new Pokémon has arrived: unlock the round and clear the input.
+  useEffect(() => {
+    resolvedRef.current = false
+    setInput('')
+  }, [data])
+
   function showFeedback(type: 'correct' | 'wrong' | 'giveup', name: string) {
     if (feedbackTimer.current) clearTimeout(feedbackTimer.current)
     setFeedback({ type, name })
@@ -51,18 +77,16 @@ const GuessCard: FC = () => {
   }
 
   async function handleGuess() {
-    if (!data) return
+    // Ignore guesses once this round is already resolved (prevents racking up
+    // points on the same Pokémon while the next one is loading).
+    if (!data || resolvedRef.current) return
     if (checkName(input, data.name)) {
+      resolvedRef.current = true
       showFeedback('correct', data.name)
       updateStreak()
       resetTimer()
-      try {
-        await nextPokemon()
-        setInput('')
-        inputRef.current?.focus()
-      } catch (err) {
-        console.error('Error fetching next pokemon:', err)
-      }
+      await advanceWithRetry()
+      inputRef.current?.focus()
     } else {
       showFeedback('wrong', '')
       inputRef.current?.focus()
@@ -70,17 +94,13 @@ const GuessCard: FC = () => {
   }
 
   async function handleGiveUp() {
-    if (!data) return
+    if (!data || resolvedRef.current) return
+    resolvedRef.current = true
     showFeedback('giveup', data.name)
     resetStreak()
     resetTimer()
-    try {
-      await nextPokemon()
-      setInput('')
-      inputRef.current?.focus()
-    } catch (err) {
-      console.error('Error fetching next pokemon:', err)
-    }
+    await advanceWithRetry()
+    inputRef.current?.focus()
   }
 
   function handleSubmit(e: React.FormEvent) {

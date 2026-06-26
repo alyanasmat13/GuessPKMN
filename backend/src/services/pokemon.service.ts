@@ -1,9 +1,52 @@
 import { config } from '../config/env';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 // In-memory state for the current Pokemon
 let currentPokemonId: number | null = null;
 const subscribers = new Set<Response>();
+
+// Track how many open SSE connections each IP currently holds so a single
+// client cannot open thousands of connections and exhaust server memory.
+const connectionsPerIp = new Map<string, number>();
+
+// Periodically ping every subscriber. A failed write means the socket is
+// dead (e.g. the client dropped off the network silently); we reap it so the
+// Response object can be garbage collected instead of leaking forever.
+const HEARTBEAT_INTERVAL_MS = 30_000;
+
+setInterval(() => {
+  subscribers.forEach((res) => {
+    try {
+      // SSE comment line; ignored by EventSource but keeps the socket alive
+      // and surfaces broken pipes as a throw we can clean up.
+      res.write(': ping\n\n');
+    } catch {
+      cleanupSubscriber(res);
+    }
+  });
+}, HEARTBEAT_INTERVAL_MS).unref();
+
+function getClientIp(req: Request): string {
+  return req.ip || req.socket.remoteAddress || 'unknown';
+}
+
+function cleanupSubscriber(res: Response) {
+  if (!subscribers.has(res)) return;
+  subscribers.delete(res);
+
+  const ip = (res as Response & { locals: { sseIp?: string } }).locals?.sseIp;
+  if (ip) {
+    const count = (connectionsPerIp.get(ip) || 1) - 1;
+    if (count <= 0) connectionsPerIp.delete(ip);
+    else connectionsPerIp.set(ip, count);
+  }
+
+  try {
+    res.end();
+  } catch {
+    /* already closed */
+  }
+}
 
 // Track the last 50 randomly drawn Pokemon to prevent immediate repeats
 const history: number[] = [];
@@ -64,21 +107,37 @@ export const pokemonService = {
   },
 
   /**
-   * Adds an Express Response object to the SSE subscribers list.
+   * Adds an Express Response object to the SSE subscribers list, enforcing a
+   * global cap and a per-IP cap to protect against connection-flood DoS.
    */
-  addSubscriber(res: Response) {
+  addSubscriber(req: Request, res: Response) {
+    // Reject if the global subscriber cap is reached.
+    if (subscribers.size >= config.MAX_SSE_CONNECTIONS_TOTAL) {
+      res.status(503).json({ error: 'Server is at capacity, try again later.' });
+      return;
+    }
+
+    const ip = getClientIp(req);
+    const existing = connectionsPerIp.get(ip) || 0;
+    if (existing >= config.MAX_SSE_CONNECTIONS_PER_IP) {
+      res.status(429).json({ error: 'Too many open connections.' });
+      return;
+    }
+
     // Set headers for Server-Sent Events
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
 
+    // Stash the IP on the response so cleanup can decrement the right counter.
+    res.locals.sseIp = ip;
+    connectionsPerIp.set(ip, existing + 1);
     subscribers.add(res);
 
-    // Remove client when they disconnect
-    res.on('close', () => {
-      subscribers.delete(res);
-    });
+    // Remove client when they disconnect or error out.
+    res.on('close', () => cleanupSubscriber(res));
+    res.on('error', () => cleanupSubscriber(res));
   },
 
   /**
@@ -91,6 +150,7 @@ export const pokemonService = {
         res.write(message);
       } catch (err) {
         console.error('Error broadcasting to a subscriber', err);
+        cleanupSubscriber(res);
       }
     });
   }

@@ -1,5 +1,11 @@
 import { getGenerationRange } from "../frontend/Header"
 
+// Base URL for the backend API. In development this is left empty so requests
+// stay relative ("/api/...") and go through Vite's dev proxy. In production
+// (split deploy) set VITE_API_URL to the backend's public URL, e.g.
+// https://guesspkmn-api.onrender.com — no trailing slash.
+const API_BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
+
 export interface PokemonData {
   name: string
   height?: number
@@ -17,7 +23,7 @@ let eventSource: EventSource | null = null;
 
 function setupEventSource() {
   if (eventSource) return;
-  eventSource = new EventSource('/api/pokemon/subscribe');
+  eventSource = new EventSource(`${API_BASE}/api/pokemon/subscribe`);
   
   eventSource.onmessage = (event) => {
     try {
@@ -55,7 +61,7 @@ function notifySubscribers(data: PokemonData) {
 
 export async function fetchPokemon(): Promise<PokemonData> {
   // Fetch current session Pokémon from the backend
-  const res = await fetch('/api/pokemon')
+  const res = await fetch(`${API_BASE}/api/pokemon`)
   if (!res.ok) {
     throw new Error(`Failed to fetch pokemon: ${res.status}`)
   }
@@ -65,7 +71,7 @@ export async function fetchPokemon(): Promise<PokemonData> {
 export async function nextPokemon(): Promise<PokemonData> {
   const { min, max } = getGenerationRange()
   
-  const res = await fetch('/api/pokemon/next', {
+  const res = await fetch(`${API_BASE}/api/pokemon/next`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

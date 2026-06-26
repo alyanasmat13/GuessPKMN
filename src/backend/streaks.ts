@@ -16,8 +16,11 @@ export async function getHighestStreak(uid: string): Promise<number> {
 
 export async function setHighestStreak(uid: string, value: number): Promise<void> {
   try {
+    // Clamp to a safe, non-negative integer so the write conforms to the
+    // Firestore security rules (see firestore.rules) and never gets rejected.
+    const safeValue = Math.max(0, Math.min(1_000_000, Math.floor(Number(value) || 0)))
     const d = doc(db, 'users', uid)
-    await setDoc(d, { highestStreak: value }, { merge: true })
+    await setDoc(d, { highestStreak: safeValue }, { merge: true })
   } catch (e) {
     console.error('Error setting highest streak', e)
   }

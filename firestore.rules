@@ -1,0 +1,42 @@
+rules_version = '2';
+
+// Firestore security rules for GuessPKMN.
+//
+// Data model:
+//   users/{uid} -> { highestStreak: <non-negative integer> }
+//
+// Without these rules Firestore would either be fully open (test mode) or
+// fully locked. These rules ensure a signed-in user can only read and write
+// THEIR OWN streak document, and that the stored value is a sane integer so a
+// malicious client cannot bloat documents or inject arbitrary fields.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Validate the shape of an incoming users/{uid} document.
+    function isValidUserDoc(data) {
+      return data.keys().hasOnly(['highestStreak'])
+        && data.highestStreak is int
+        && data.highestStreak >= 0
+        && data.highestStreak <= 1000000;
+    }
+
+    match /users/{userId} {
+      // Only the owner may read their record.
+      allow read: if request.auth != null
+        && request.auth.uid == userId;
+
+      // Only the owner may create/update, and only with a valid payload.
+      allow create, update: if request.auth != null
+        && request.auth.uid == userId
+        && isValidUserDoc(request.resource.data);
+
+      // Streak records are not meant to be deleted from the client.
+      allow delete: if false;
+    }
+
+    // Deny everything else by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -8,8 +8,6 @@ export function updateStreak() {
 	streakValue = streakValue + 1;
 	if (externalSetStreak) {
 		externalSetStreak(streakValue);
-	} else {
-		console.debug('Streak updated in module; component not mounted yet.');
 	}
 	for (const l of streakListeners) l(streakValue);
 }
@@ -18,8 +16,6 @@ export function resetStreak() {
 	streakValue = 0;
 	if (externalSetStreak) {
 		externalSetStreak(0);
-	} else {
-		console.debug('Streak reset in module; component not mounted yet.');
 	}
 	for (const l of streakListeners) l(streakValue);
 }

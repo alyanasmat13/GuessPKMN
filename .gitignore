@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 .env*
+# ...but keep example env files so contributors know what to set
+!.env.example
+!backend/.env.example
