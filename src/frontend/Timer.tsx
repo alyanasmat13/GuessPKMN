@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 let externalResetTimer: (() => void) | null = null;
 let pendingReset = false;
@@ -12,7 +12,11 @@ export function resetTimer() {
 	}
 }
 
-const Timer = () => {
+interface TimerProps {
+    paused?: boolean;
+}
+
+const Timer: React.FC<TimerProps> = ({ paused = false }) => {
 
     const [sec, setSec] = useState(0);
     const [hundredths, setHundredths] = useState(0);
@@ -32,6 +36,8 @@ const Timer = () => {
             pendingReset = false;
         };
 
+        if (paused) return;
+
         const id = window.setInterval(() => {
             const next = hundredthsRef.current + 1;
             if (next >= 100) {
@@ -48,7 +54,7 @@ const Timer = () => {
             window.clearInterval(id);
             externalResetTimer = null;
         };
-    }, []);
+    }, [paused]);
 
   return (
     <div className="timer-display text-white">
